@@ -72,7 +72,7 @@ public static class CombineChildMeshesByColor
             var ciList = kvp.Value;
             Mesh m = new Mesh();
             m.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
-            m.CombineMeshes(ciList.ToArray(), true, true); // mergeSubMeshes = true (один сабмеш на цвет)
+            m.CombineMeshes(ciList.ToArray(), true, true); // mergeSubMeshes = true (one submesh for color)
             partialMeshes.Add(m);
             orderedMaterials.Add(materials[kvp.Key]);
         }
@@ -136,3 +136,4 @@ public static class CombineChildMeshesByColor
         return shader + "_" + colKey;
     }
 }
+
