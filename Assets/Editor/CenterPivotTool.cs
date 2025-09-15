@@ -15,10 +15,10 @@ public class CenterPivotTool : MonoBehaviour
 
         GameObject root = Selection.activeGameObject;
 
-        // 1) Итеративно собираем все узлы в дереве (DFS), защищаемся от циклов
+        // 1) Iteratively collect all nodes in the tree (DFS), protect against cycles
         var stack = new Stack<GameObject>();
         var visited = new HashSet<Transform>();
-        var order = new List<GameObject>(); // предварительный порядок
+        var order = new List<GameObject>(); // preliminary order
 
         stack.Push(root);
         while (stack.Count > 0)
@@ -29,7 +29,7 @@ public class CenterPivotTool : MonoBehaviour
             visited.Add(node.transform);
             order.Add(node);
 
-            // пушим детей (любым порядком)
+            // push the children (in any order)
             for (int i = 0; i < node.transform.childCount; i++)
             {
                 var ch = node.transform.GetChild(i);
@@ -38,14 +38,14 @@ public class CenterPivotTool : MonoBehaviour
             }
         }
 
-        // 2) Обрабатываем в обратном порядке — сначала листья, затем вверх по дереву
+        // 2) Process in reverse order — first the leaves, then up the tree
         for (int idx = order.Count - 1; idx >= 0; idx--)
         {
             var obj = order[idx];
             var t = obj.transform;
             if (t.childCount == 0) continue;
 
-            // собираем bounds по всем рендерерам, принадлежащим каждому прямому ребёнку (включая его поддерево)
+            // collect bounds for all renderers belonging to each direct child (including its subtree)
             bool hasBounds = false;
             Bounds bounds = new Bounds();
 
@@ -67,19 +67,19 @@ public class CenterPivotTool : MonoBehaviour
                 }
             }
 
-            if (!hasBounds) continue; // у прямых детей нет геометрии
+            if (!hasBounds) continue; // straight children have no geometry
 
             Vector3 center = bounds.center;
 
-            // Запись для Undo (фиксируем состояния перед изменением)
-            // Регистрируем родителя и всех прямых детей — это даёт удобный откат
+            // Undo entry (record the state before the change)
+            // Register the parent and all direct children — this provides a convenient rollback
             var undoList = new List<Object> { obj.transform };
             for (int c = 0; c < t.childCount; c++)
                 undoList.Add(t.GetChild(c));
 
             Undo.RecordObjects(undoList.ToArray(), "Center Pivot Iterative");
 
-            // смещаем детей, чтобы визуально ничего не съехало, а сам узел перенести в center
+            // move the children so that nothing visually shifts, and move the node itself to the center
             Vector3 delta = t.position - center;
             if (delta != Vector3.zero)
             {
@@ -95,3 +95,4 @@ public class CenterPivotTool : MonoBehaviour
         Debug.Log("Center Pivot Iterative: done.");
     }
 }
+
